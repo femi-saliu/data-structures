@@ -3,8 +3,8 @@ var Tree = function(value){
   newTree.value = value;
 
   // your code here
-  newTree.children = null;  // fix me
-
+  newTree.children = [];  // fix me
+  _.extend(newTree,treeMethods);
   return newTree;
 };
 
@@ -15,10 +15,25 @@ var Tree = function(value){
 var treeMethods = {};
 
 treeMethods.addChild = function(value){
-
+  var tree = new Tree(value);
+  this.children.push(tree);
 };
 
 treeMethods.contains = function(target){
+  //base cases
+  if(this.value === target) {
+    return true;
+  }
+  else if(this.children.length === 0) {
+    return false;
+  }
+
+  return _.reduce(this.children, function(test,tree) {
+    return tree.contains(target) || test;
+  },false);
+
+
+
 
 };
 
@@ -26,3 +41,6 @@ treeMethods.contains = function(target){
 /*
  * Complexity: What is the time complexity of the above functions?
  */
+
+// addChild() is O(1)
+// contains() is O(n)
