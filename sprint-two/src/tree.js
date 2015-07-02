@@ -29,18 +29,19 @@ treeMethods.contains = function(target){
   else if(this.children.length === 0) {
     return false;
   }
-
   return _.reduce(this.children, function(test,tree) {
     return tree.contains(target) || test;
   },false);
-
-treeMethods.removeFromParent = function(tree){
-
-}
-
-
 };
 
+treeMethods.removeFromParent = function(){
+  if(this.parent) {
+    var index = _.indexOf(this.parent.children,this);
+    var offshoot = this.parent.children.splice(index,1)[0];
+    offshoot.parent = null;
+    return offshoot;
+  }
+}
 
 /*
  * Complexity: What is the time complexity of the above functions?
