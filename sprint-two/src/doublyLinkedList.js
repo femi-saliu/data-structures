@@ -6,7 +6,9 @@ var DoublyLinkedList = function(){
   list.addToHead = function(value){
     var newNode = new Node(value);
     newNode.next = this.head;
-    this.head.previous = newNode;
+    if(this.head) {
+      this.head.previous = newNode;
+    }
     this.head = newNode;
   };
 
@@ -28,7 +30,11 @@ var DoublyLinkedList = function(){
     if (list.head !== null){
       var oldHead = list.head;
       list.head = list.head.next;
-      list.head.previous = null;
+
+      if (list.head){              //Edge case: when there was only one node in the list.
+        list.head.previous = null;
+      }
+
       var result = oldHead.value;
       delete oldHead;
       return result;
@@ -39,7 +45,9 @@ var DoublyLinkedList = function(){
     if (list.tail !== null){
       var oldTail = list.tail;
       list.tail = list.tail.previous;
-      list.tail.next = null;
+      if(list.tail) {
+        list.tail.next = null;
+      }
       var result = oldTail.value;
       delete oldTail;
       return result;
