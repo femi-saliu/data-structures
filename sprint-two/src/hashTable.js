@@ -1,87 +1,11 @@
-// var HashTable = function(){
-//   this._limit = 8;
-//   this._storage = LimitedArray(this._limit);
-//   this._size = 0;
-// };
 
-// HashTable.prototype.insert = function(k, v){
-
-//   var i = getIndexBelowMaxForKey(k, this._limit);
-//   if(this._storage.get(i) === undefined){
-//     this._storage.set(i,[v]);
-//   } else {
-//     var oldArray = this._storage.get(i);
-//     this._storage.set(i,oldArray.concat(v));
-//   }
-//   this._size++;
-
-//   //check to expand
-//   if(this._size >= 0.75*this._limit) {
-//     this._limit *= 2;
-//     var newStorage = LimitedArray(this._limit);
-//     this._storage.each(function(val, index, array) {
-//       newStorage.set(index,val);
-//     });
-//     this._storage = newStorage;
-//   }
-// };
-
-// HashTable.prototype.retrieve = function(k){
-//   var i = getIndexBelowMaxForKey(k, this._limit);
-//   var arrayAtIndex = this._storage.get(i);
-
-//   //remove
-//   // console.log(arrayAtIndex);
-//   // if (!arrayAtIndex){debugger};
-//   var result = arrayAtIndex[0];
-//   arrayAtIndex.splice(0,1);
-//   arrayAtIndex.push(result);
-//   this._storage.set(i,arrayAtIndex);
-//   return result;
-// };
-
-// HashTable.prototype.remove = function(k){
-
-// //check to contract
-// //remove
-// // console.log('before resize: ' + this._limit);
-
-//   if((this._limit>8) && this._size <= 0.25*this._limit) {
-//     //remove
-//     // console.log('resizing..');
-
-
-//     this._limit /= 2;
-//     var newStorage = LimitedArray(this._limit);
-//     this._storage.each(function(val, index, array) {
-//       var map = index % this._limit;
-//       if(newStorage.get(map) === undefined) { newStorage.set(map, []); }
-//       newStorage.get(map).push(val);
-//     });
-//     console.log("newStorage: ", newStorage);
-//     this._storage = newStorage;
-//   }
-
-//   //remove
-//   // console.log('after resizing ' + this._limit);
-
-//   var i = getIndexBelowMaxForKey(k, this._limit);
-//   this._storage.each(function(val, ind, obj) {
-//     if(obj[ind] === undefined) { obj[ind] = [null]; }
-//     if(ind === i) { obj[ind] = [null]; }
-//   });
-//   this._size--;
-
-// };
 var HashTable = function(){
   this._limit = 8;
   this._storage = LimitedArray(this._limit);
   this._size = 0;
 };
 
-
 HashTable.prototype.insert = function(k, v){
-
   var value = Tuple(k,v);
   var i = getIndexBelowMaxForKey(k, this._limit);
 
@@ -93,6 +17,7 @@ HashTable.prototype.insert = function(k, v){
     this._storage.set(i, oldArray);
   }
   this._size++;
+  this.resize("grow");
 
 };
 
@@ -101,33 +26,85 @@ HashTable.prototype.retrieve = function(k) {
   var i = getIndexBelowMaxForKey(k, this._limit);
   var array = this._storage.get(i);
 
-  //Traverse through array to find the right tuple
   var result = null;
   _.each(array, function(tuple) {
     if(tuple.key === k) {
       result = tuple.value;
     }
   });
-
   return result;
 };
 
 HashTable.prototype.remove = function(k){
 
-  var i = getIndexBelowMaxForKey(k, this._limit); // fine
+  var i = getIndexBelowMaxForKey(k, this._limit);
   this._storage.each(function(array, ind, storage) {
-    if(array === undefined) { array = [null]; }
+    if(array === undefined) {}
     if(ind === i) {
-      //Traverse through array to remove the right tuple
       _.each(array, function(tuple, index) {
         if(tuple.key === k) {
           array.splice(index,1);
         }
       });
-    } // change to tuple implementation
+    }
   });
   this._size--;
 
+  this.resize("shrink");
+
+};
+
+HashTable.prototype.resize = function(action) {
+  if(action === "grow"){
+    // check if usage > 75%
+    // if so, grow
+    if(this._size >= 0.75 * this._limit) {
+      this._limit *= 2;
+      //remake the table
+      var newStorage = LimitedArray(this._limit);
+      this._storage.each(function(array, ind, storage) {
+
+        _.each(array, function(tuple) {
+          var iNew = getIndexBelowMaxForKey(tuple.key, this._limit);
+          if(newStorage.get(iNew) === undefined) {
+            newStorage.set(iNew,[tuple]);
+          } else {
+            var oldArray = newStorage.get(iNew);
+            oldArray.push(tuple);
+            newStorage.set(iNew, oldArray);
+          }
+        });
+
+      });
+      this._storage = newStorage;
+    }
+
+
+  } else if (action === "shrink"){
+    // check if usage < 25%
+    // if so, shrink
+    if(this._size < 0.25 * this._limit) {
+      this._limit = Math.floor(this._limit/2);
+      //remake the table
+      var newStorage = LimitedArray(this._limit);
+      this._storage.each(function(array, ind, storage) {
+
+        _.each(array, function(tuple) {
+          var iNew = getIndexBelowMaxForKey(tuple.key, this._limit);
+          if(newStorage.get(iNew) === undefined) {
+            newStorage.set(iNew,[tuple]);
+          } else {
+            var oldArray = newStorage.get(iNew);
+            oldArray.push(tuple);
+            newStorage.set(iNew, oldArray);
+          }
+        });
+
+      });
+      this._storage = newStorage;
+    }
+
+  }
 };
 
 var Tuple = function(key, value){
