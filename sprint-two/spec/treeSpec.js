@@ -66,5 +66,24 @@ describe('tree', function() {
     expect(tree.children[3].removeFromParent().contains(4)).to.equal(true);
   });
 
+  xit('should traverse with a callback', function(){
+    tree.value = 1;
+    tree.addChild(1);
+    tree.addChild(1);
+    tree.addChild(1);
+    tree.addChild(1);
+    tree.traverse(function(val) {
+      this.value = val*2;
+    });
+    var sum = _.reduce(tree.children, function(acc, child) {
+      return acc + child.value;
+    },0);
+
+    expect(tree.value).to.equal(2);
+    expect(sum).to.equal(8);
+
+  });
+
+
 
 });
