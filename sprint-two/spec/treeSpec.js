@@ -41,4 +41,49 @@ describe('tree', function() {
     expect(tree.contains(8)).to.equal(true);
   });
 
+  xit('should have a property named "parent"', function(){
+    expect(tree.hasOwnProperty("parent")).to.equal(true);
+  });
+
+  xit('should have a method named "removeFromParent"', function(){
+    expect(tree.removeFromParent).to.be.a("function");
+  });
+
+  xit('should de-associate a tree from its parent using the method "removeFromParent"', function(){
+    tree.addChild(1);
+    tree.addChild(2);
+    tree.addChild(3);
+    tree.addChild(4);
+    tree.children[3].removeFromParent();
+    expect(tree.contains(4)).to.equal(false);
+  });
+
+  xit('should return the removed tree after the method "removeFromParent" is called', function(){
+    tree.addChild(1);
+    tree.addChild(2);
+    tree.addChild(3);
+    tree.addChild(4);
+    expect(tree.children[3].removeFromParent().contains(4)).to.equal(true);
+  });
+
+  xit('should traverse with a callback', function(){
+    tree.value = 1;
+    tree.addChild(1);
+    tree.addChild(1);
+    tree.addChild(1);
+    tree.addChild(1);
+    tree.traverse(function(val) {
+      this.value = val*2;
+    });
+    var sum = _.reduce(tree.children, function(acc, child) {
+      return acc + child.value;
+    },0);
+
+    expect(tree.value).to.equal(2);
+    expect(sum).to.equal(8);
+
+  });
+
+
+
 });
